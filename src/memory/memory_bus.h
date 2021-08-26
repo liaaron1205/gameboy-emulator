@@ -9,6 +9,9 @@ class MemoryBus {
     u8 currentRAMBank;
 
    public:
+    MemoryBus();
+    ~MemoryBus() = default;
+
     void write(u16 address, u8 data);
     u8 read(u16 address);
     void inc(u16 address);

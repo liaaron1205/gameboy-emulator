@@ -3,6 +3,7 @@
 #include <array>
 #include <cstdint>
 #include <cstdlib>
+#include <cstring>
 
 typedef int8_t i8;
 typedef uint8_t u8;

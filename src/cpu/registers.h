@@ -17,15 +17,15 @@ class FlagRegister : public Register {
     FlagRegister();
     ~FlagRegister() = default;
 
-    void set_z(bool value);
-    void set_n(bool value);
-    void set_h(bool value);
-    void set_c(bool value);
+    void setZ(bool value);
+    void setN(bool value);
+    void setH(bool value);
+    void setC(bool value);
 
-    bool get_z();
-    bool get_n();
-    bool get_h();
-    bool get_c();
+    bool getZ();
+    bool getN();
+    bool getH();
+    bool getC();
 };
 
 class RegisterPair {
@@ -37,9 +37,6 @@ class RegisterPair {
 
     void set(u16 value);
     u16 get();
-
-    void inc();
-    void dec();
 };
 
 const int Z_FLAG = 7;

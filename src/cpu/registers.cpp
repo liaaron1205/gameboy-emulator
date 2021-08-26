@@ -6,33 +6,35 @@ u8 Register::get() { return val; }
 
 void Register::set(u8 value) { val = value; }
 
-void FlagRegister::set_z(bool value) {
+FlagRegister::FlagRegister() { val = 0; }
+
+void FlagRegister::setZ(bool value) {
     val &= ~(1 << Z_FLAG);
     if (value) val |= (1 << Z_FLAG);
 }
-void FlagRegister::set_n(bool value) {
+void FlagRegister::setN(bool value) {
     val &= ~(1 << N_FLAG);
     if (value) val |= (1 << N_FLAG);
 }
-void FlagRegister::set_h(bool value) {
+void FlagRegister::setH(bool value) {
     val &= ~(1 << H_FLAG);
     if (value) val |= (1 << H_FLAG);
 }
-void FlagRegister::set_c(bool value) {
+void FlagRegister::setC(bool value) {
     val &= ~(1 << C_FLAG);
     if (value) val |= (1 << C_FLAG);
 }
 
-bool FlagRegister::get_z() {
+bool FlagRegister::getZ() {
     return val & (1 << Z_FLAG);
 }
-bool FlagRegister::get_n() {
+bool FlagRegister::getN() {
     return val & (1 << N_FLAG);
 }
-bool FlagRegister::get_h() {
+bool FlagRegister::getH() {
     return val & (1 << H_FLAG);
 }
-bool FlagRegister::get_c() {
+bool FlagRegister::getC() {
     return val & (1 << C_FLAG);
 }
 

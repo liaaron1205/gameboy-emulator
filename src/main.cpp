@@ -7,7 +7,8 @@
 using namespace std;
 
 int main() {
-    int x = 4;
-    int y = x += 2;
-    cout << y << endl;
+    u16 a = 0xFF00;
+    u16 b = 0xFFFF;
+    bool c = (a - b - 1) < 0;
+    cout << (a - b + 1) << endl;
 }
