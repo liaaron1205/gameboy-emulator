@@ -37,6 +37,9 @@ class RegisterPair {
 
     void set(u16 value);
     u16 get();
+
+    u16 pp();  //Like ++, increments and returns un-incremented value
+    u16 mm();  //Like --, decrements and returns un-decremented value
 };
 
 const int Z_FLAG = 7;

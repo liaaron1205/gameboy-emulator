@@ -48,3 +48,15 @@ void RegisterPair::set(u16 value) {
     lo.set((u8)(value & 0x00FF));
     hi.set((u8)((value & 0xFF00) >> 8));
 }
+
+u16 RegisterPair::pp() {
+    u16 old_value = get();
+    set(old_value + 1);
+    return old_value;
+}
+
+u16 RegisterPair::mm() {
+    u16 old_value = get();
+    set(old_value - 1);
+    return old_value;
+}

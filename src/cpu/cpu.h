@@ -34,8 +34,6 @@ class CPU {
     u8 fetch();
     u16 fetch16();
 
-    void setPair(RegisterPair& reg, u16 value);
-    void setSP(u16 value);
     void setPC(u16 value);
 
     u8 inc(u8 value);
@@ -52,6 +50,8 @@ class CPU {
     u16 add(u16 term1, u16 term2, bool carry = false);
     u8 sub(u8 term1, u8 term2, bool carry = false);
     u16 sub(u16 term1, u16 term2, bool carry = false);
+
+    void jr(bool cond = true);
 };
 
 /*
