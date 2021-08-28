@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "cpu/cpu.h"
+#include "memory/memory_bus.h"
 
 using namespace std;
 
@@ -13,5 +14,6 @@ int y() {
     return 3;
 }
 int main() {
-    cout << x + y() << endl;
+    CPU cpu("asdf");
+    cpu.test();
 }

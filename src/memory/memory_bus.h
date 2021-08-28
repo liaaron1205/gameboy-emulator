@@ -1,19 +1,22 @@
 #pragma once
 
+#include <fstream>
+#include <iostream>
+#include <string>
+
 #include "../constants.h"
 
 class MemoryBus {
-    u8 memory[0x10000];
-
-    u8 ramBanks[0x8000];
+    std::vector<u8> memory;
+    std::vector<u8> cartridge;
+    std::vector<u8> ramBanks;
     u8 currentRAMBank;
 
    public:
-    MemoryBus();
+    MemoryBus() = default;
+    MemoryBus(std::string filename);
     ~MemoryBus() = default;
 
     void write(u16 address, u8 data);
     u8 read(u16 address);
-    void inc(u16 address);
-    void dec(u16 address);
 };

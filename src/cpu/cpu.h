@@ -19,7 +19,7 @@ class CPU {
     int cycles = 0;
 
    public:
-    CPU();
+    CPU(std::string filename);
     ~CPU() = default;
 
     void fetchDecodeExecute();
@@ -41,26 +41,52 @@ class CPU {
     u8 dec(u8 value);
     u16 dec(u16 value);
 
-    u8 rlc(u8 value, bool checkZero = true);
-    u8 rl(u8 value, bool checkZero = true);
-    u8 rrc(u8 value, bool checkZero = true);
-    u8 rr(u8 value, bool checkZero = true);
+    u8 rlc(u8 value, bool checkZero = 1);
+    u8 rl(u8 value, bool checkZero = 1);
+    u8 rrc(u8 value, bool checkZero = 1);
+    u8 rr(u8 value, bool checkZero = 1);
+    u8 sla(u8 value);
+    u8 sra(u8 value);
+    u8 srl(u8 value);
+    u8 swap(u8 value);
 
-    u8 add(u8 term1, u8 term2, bool carry = false);
-    u16 add(u16 term1, u16 term2, bool carry = false);
-    u8 sub(u8 term1, u8 term2, bool carry = false);
-    u16 sub(u16 term1, u16 term2, bool carry = false);
+    void bit(int num, u8 value);
+    u8 res(int num, u8 value);
+    u8 set(int num, u8 value);
 
-    void jr(bool cond = true);
+    u8 add(u8 term1, u8 term2, bool carry = 0);
+    u16 add(u16 term1, u16 term2, bool carry = 0);
+    u8 sub(u8 term1, u8 term2, bool carry = 0);
+    u16 sub(u16 term1, u16 term2, bool carry = 0);
+
+    u8 land(u8 term1, u8 term2);
+    u8 lxor(u8 term1, u8 term2);
+    u8 lor(u8 term1, u8 term2);
+    void cp(u8 term1, u8 term2);
+
+    void push(u16 value);
+    void pushOP(u16 value);
+    u16 pop();
+
+    void jr(bool cond = 1);
+    void jp(bool cond = 1);
+    void call(bool cond = 1);
+    void ret();
+    void ret(bool cond);
+    void rst(u16 value);
+
+    u16 extend(u8 value);
+
+    void fetchDecodeExecutePrefix();
 };
-
 /*
+
 Reading and writing from system memory takes 4 cycles
 
 Writing to a 16 bit register also takes 4 cycles
 
 Other operations take 0 cycles
 
-Note: for 16bit operation, the carry from bit11 to 12 (3 to 4 in the upper byte) sets the half carry flag.
+Note: for 16bit operation, the carry from bit11 to 12 (3 to 4 in the upper byte) sets the half carry flag
 
 */
