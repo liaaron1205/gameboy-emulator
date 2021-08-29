@@ -19,6 +19,24 @@ MemoryBus::MemoryBus(std::string filename) : memory(0x10000), cartridge(0x200000
         }
     }
 
+    //Detect MBC
+    switch (cartridge[0x147]) {
+        case 1:
+        case 2:
+        case 3:
+            MBC = 1;
+            break;
+        case 5:
+        case 6:
+            // MBC = 2;
+            break;
+        default:
+            break;
+    }
+    numberRAMBanks = cartridge[0x148];
+}
+
+void MemoryBus::initialize() {
     memory[0xFF05] = 0x00;
     memory[0xFF06] = 0x00;
     memory[0xFF07] = 0x00;
@@ -55,6 +73,7 @@ MemoryBus::MemoryBus(std::string filename) : memory(0x10000), cartridge(0x200000
 void MemoryBus::write(u16 address, u8 data) {
     //Read Only
     if (address < 0x8000) {
+        HandleBanking(address, data);
     }
 
     //ECHO Ram
@@ -75,12 +94,46 @@ void MemoryBus::write(u16 address, u8 data) {
     else if (address == 0xFF46) {
     }
 
-    else {
+    else
         memory[address] = data;
-    }
 }
 
-u8 MemoryBus::read(u16 address) {
-    //TODO More complex read
-    return memory[address];
+u8 MemoryBus::read(u16 address) const {
+    if (address < 0x4000)
+        return cartridge[address];
+    else if (address < 0x8000)
+        return cartridge[address - 0x4000 + (currentROMBank * 0x4000)];
+    else if (address >= 0xA000 && address < 0xC000)
+        return ramBanks[address - 0xA000 + (currentRAMBank * 0x2000)];
+    else
+        return memory[address];
+}
+
+void MemoryBus::HandleBanking(u16 address, u8 data) {
+    switch (MBC) {
+        case 0:
+            return;
+        case 1:
+            if (address < 0x2000) {
+                if (data & 0xF == 0xA)
+                    enableRam = 1;
+                else
+                    enableRam = 0;
+            } else if (address < 0x4000) {
+                currentROMBank = (currentROMBank & 0xE0) | (data & 0x1F);
+            } else if (address < 0x6000) {
+                if (romBanking)
+                    currentROMBank = (currentROMBank & 0x1F) | ((data & 0x3) << 5);
+                else
+                    currentRAMBank = (data & 0x3);
+            } else {
+                romBanking = !(data & 0x1);
+                if (romBanking) currentRAMBank = 0;
+            }
+            break;
+        case 2:
+        default:
+            break;
+    }
+    if (currentROMBank == 0 || currentROMBank == 0x20 || currentROMBank == 0x40 || currentROMBank == 0x60) currentROMBank++;
 }

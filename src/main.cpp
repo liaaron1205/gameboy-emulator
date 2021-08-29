@@ -15,5 +15,4 @@ int y() {
 }
 int main() {
     CPU cpu("asdf");
-    cpu.test();
 }

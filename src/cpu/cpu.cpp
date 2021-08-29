@@ -6,6 +6,9 @@ CPU::CPU(std::string filename) {
     bc.set(0x0013);
     de.set(0x00D8);
     hl.set(0x014D);
+
+    PC = 0x100;
+    SP = 0xFFEE;
 }
 
 void CPU::fetchDecodeExecute() {
