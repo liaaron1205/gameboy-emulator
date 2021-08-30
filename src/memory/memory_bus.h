@@ -7,6 +7,7 @@
 #include "../constants.h"
 
 class MemoryBus {
+   public:
     std::vector<u8> memory;
     std::vector<u8> cartridge;
     std::vector<u8> ramBanks;  //On the actual hardware, this is external RAM in the cartridge
@@ -20,15 +21,19 @@ class MemoryBus {
     int MBC = 0;
 
    public:
-    MemoryBus() = default;
-    MemoryBus(std::string filename);
+    MemoryBus();
     ~MemoryBus() = default;
+
+    void loadCartridge(std::string filename);
 
     void write(u16 address, u8 data);
     u8 read(u16 address) const;
 
    private:
     void initialize();
+
+    void writeIO(u16 address, u8 data);
+    u8 readIO(u16 address);
 
     void HandleBanking(u16 address, u8 data);
     void HandleRAMBankEnable(u16 address, u8 data);

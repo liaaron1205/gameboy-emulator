@@ -1,7 +1,6 @@
 #include "cpu.h"
 
-CPU::CPU(std::string filename) {
-    memory = MemoryBus(filename);
+CPU::CPU(MemoryBus& _memory) : memory{_memory} {
     af.set(0x01B);
     bc.set(0x0013);
     de.set(0x00D8);
@@ -11,7 +10,33 @@ CPU::CPU(std::string filename) {
     SP = 0xFFEE;
 }
 
+void CPU::tick() {
+    if (cycles == 0) handleInterrupts();
+    if (cycles == 0) fetchDecodeExecute();
+    cycles--;
+}
+
+void CPU::handleInterrupts() {
+    if (!IME) return;
+    u8 IE = memory.read(0xFFFF);
+    u8 IF = memory.read(0xFF0F);
+    for (int pos = 0; pos < 5; pos++) {
+        if ((IE & (1 << pos)) && (IF & (1 << pos))) {
+            //Request interrupt
+            //Reset the IME and IF bit
+            IME = 0;
+            IF &= !(1 << pos);
+            memory.write(IF, 0xFF0F);
+
+            cycles += 8;
+            push(PC);
+            setPC(0x0040 + pos * 0x0008);
+        }
+    }
+}
+
 void CPU::fetchDecodeExecute() {
+    cycles = 0;
     u8 opcode = fetch();
     switch (opcode) {
         case 0x00:
@@ -679,7 +704,8 @@ void CPU::fetchDecodeExecute() {
             ret(f.getC());
             break;
         case 0xD9:
-            //TODO reti();
+            ret();
+            IME = 1;  //This will only be called when IME is 1?
             break;
         case 0xDA:
             jp(f.getC());
@@ -739,7 +765,7 @@ void CPU::fetchDecodeExecute() {
             a.set(read(0xFF00 + c.get()));
             break;
         case 0xF3:
-            //TODO DI
+            IME = 0;
             break;
         case 0xF5:
             pushOP(af.get());
@@ -762,7 +788,7 @@ void CPU::fetchDecodeExecute() {
             a.set(read(fetch16()));
             break;
         case 0xFB:
-            //TODO
+            IME = 1;
             break;
         case 0xFE:
             cp(a.get(), fetch());
@@ -1547,11 +1573,9 @@ void CPU::fetchDecodeExecutePrefix() {
             break;
     }
 }
-int CPU::getCycles() { return cycles; }
 
 u8 CPU::read(u16 address) {  // 4 cycles
     cycles += 4;
-    return 0;  //REMOVE
     return memory.read(address);
 }
 u16 CPU::read16(u16 address) {  // 8 cycles
@@ -1561,7 +1585,6 @@ u16 CPU::read16(u16 address) {  // 8 cycles
 }
 void CPU::write(u16 address, u8 value) {  // 4 cycles
     cycles += 4;
-    return;  //REMOVE
     memory.write(address, value);
 }
 void CPU::write16(u16 address, u16 value) {  // 8 cycles

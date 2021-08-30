@@ -2,37 +2,11 @@
 
 #include <cstdio>
 
-MemoryBus::MemoryBus(std::string filename) : memory(0x10000), cartridge(0x200000), ramBanks(0x8000) {
+MemoryBus::MemoryBus() : memory(0x10000), cartridge(0x200000), ramBanks(0x8000) {
     std::fill(memory.begin(), memory.end(), 0);
     std::fill(cartridge.begin(), cartridge.end(), 0);
     std::fill(ramBanks.begin(), ramBanks.end(), 0);
 
-    std::ifstream infile(filename, std::ios::binary);
-
-    int idx = 0;
-    if (infile.is_open()) {
-        while (infile) {
-            u8 val = infile.get();
-            if (idx < 0x20000) {
-                cartridge[idx++] = val;
-            }
-        }
-    }
-
-    //Detect MBC
-    switch (cartridge[0x147]) {
-        case 1:
-        case 2:
-        case 3:
-            MBC = 1;
-            break;
-        case 5:
-        case 6:
-            // MBC = 2;
-            break;
-        default:
-            break;
-    }
     numberRAMBanks = cartridge[0x148];
 }
 
@@ -70,43 +44,134 @@ void MemoryBus::initialize() {
     memory[0xFFFF] = 0x00;
 }
 
+void MemoryBus::loadCartridge(std::string filename) {
+    std::ifstream infile(filename, std::ios::binary);
+
+    int idx = 0;
+    if (infile.is_open()) {
+        while (infile) {
+            u8 val = infile.get();
+            if (idx < 0x20000) {
+                cartridge[idx++] = val;
+            }
+        }
+    } else {
+        std::cerr << "Failed to open file" << std::endl;
+    }
+
+    //Detect MBC
+    switch (cartridge[0x147]) {
+        case 1:
+        case 2:
+        case 3:
+            MBC = 1;
+            break;
+        case 5:
+        case 6:
+            // MBC = 2;
+            break;
+        default:
+            break;
+    }
+}
+
 void MemoryBus::write(u16 address, u8 data) {
-    //Read Only
+    //Cartridge ROM Bank
     if (address < 0x8000) {
         HandleBanking(address, data);
     }
-
-    //ECHO Ram
-    else if (address >= 0xE000 && address < 0xFE00) {
+    //VRAM
+    else if (address < 0xA000) {
+    }
+    //Cartridge RAM Bank
+    else if (address < 0xC000) {
+        ramBanks[address - 0xA000 + (currentRAMBank * 0x2000)] = data;
+    }
+    //WRAM
+    else if (address < 0xE000) {
         memory[address] = data;
+    }
+    //ECHO Ram
+    else if (address < 0xFE00) {
         write(address - 0x2000, data);
     }
-
+    //Sprite Atribute Table (OAM)
+    else if (address < 0xFEA0) {
+    }
     //Restricted area
-    else if (address >= 0xFEA0 && address < 0xFEFF) {
+    else if (address < 0xFF00) {
     }
-
-    else if (address == 0xFF44) {
-        memory[address] = 0;
+    //I/O Registers
+    else if (address < 0xFF80) {
     }
-
-    //Handle DMA
-    else if (address == 0xFF46) {
+    //High RAM
+    else if (address < 0xFFFF) {
     }
-
-    else
+    //Interrupt Enable Register
+    else {
         memory[address] = data;
+    }
 }
 
 u8 MemoryBus::read(u16 address) const {
-    if (address < 0x4000)
+    //Cartridge ROM (Non-Bank)
+    if (address < 0x4000) {
         return cartridge[address];
-    else if (address < 0x8000)
+    }
+    //Cartridge ROM Bank
+    else if (address < 0x8000) {
         return cartridge[address - 0x4000 + (currentROMBank * 0x4000)];
-    else if (address >= 0xA000 && address < 0xC000)
+    }
+    //VRAM
+    else if (address < 0xA000) {
+    }
+    //Cartridge RAM Bank
+    else if (address < 0xC000) {
         return ramBanks[address - 0xA000 + (currentRAMBank * 0x2000)];
-    else
+    }
+    //WRAM
+    else if (address < 0xE000) {
         return memory[address];
+    }
+    //ECHO Ram
+    else if (address < 0xFE00) {
+        return read(address - 0x2000);
+    }
+    //Sprite Atribute Table (OAM)
+    else if (address < 0xFEA0) {
+    }
+    //Restricted area
+    else if (address < 0xFF00) {
+        return 0xFF;
+    }
+    //I/O Registers
+    else if (address < 0xFF80) {
+    }
+    //High RAM
+    else if (address < 0xFFFF) {
+    }
+    //Interrupt Enable Register
+    else {
+        return memory[address];
+    }
+}
+
+void MemoryBus::writeIO(u16 address, u8 data) {
+    switch (address) {
+        case 0xFF0F:
+            memory[address] = data;
+        default:
+            break;
+    }
+}
+
+u8 MemoryBus::readIO(u16 address) {
+    switch (address) {
+        case 0xFF0F:
+            return memory[address];
+        default:
+            return 0xFF;
+    }
 }
 
 void MemoryBus::HandleBanking(u16 address, u8 data) {

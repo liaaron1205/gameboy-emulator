@@ -4,7 +4,7 @@
 
 class CPU {
    public:  //Temp
-    MemoryBus memory;
+    MemoryBus& memory;
 
     Register a, b, c, d, e, h, l;
     FlagRegister f;
@@ -18,14 +18,20 @@ class CPU {
 
     int cycles = 0;
 
+    bool IME = 1;
+
    public:
-    CPU(std::string filename);
+    CPU(MemoryBus& _memory);
     ~CPU() = default;
 
-    void fetchDecodeExecute();
-    int getCycles();
+    void tick();
 
    public:  //Temp
+    void handleInterrupts();
+
+    void fetchDecodeExecute();
+    void fetchDecodeExecutePrefix();
+
     u8 read(u16 address);
     u16 read16(u16 address);
     void write(u16 address, u8 value);
@@ -76,8 +82,6 @@ class CPU {
     void rst(u16 value);
 
     u16 extend(u8 value);
-
-    void fetchDecodeExecutePrefix();
 };
 /*
 
