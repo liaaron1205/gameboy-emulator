@@ -17,6 +17,8 @@ class FlagRegister : public Register {
     FlagRegister();
     ~FlagRegister() = default;
 
+    void clearLowBits();
+
     void setZ(bool value);
     void setN(bool value);
     void setH(bool value);

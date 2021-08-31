@@ -5,4 +5,6 @@ GameBoy::GameBoy(std::string filename) {
 }
 
 void GameBoy::tick() {
+    timer.tick();
+    cpu.tick();
 }

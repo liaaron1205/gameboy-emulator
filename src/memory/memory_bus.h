@@ -5,6 +5,8 @@
 #include <string>
 
 #include "../constants.h"
+#include "../cpu/interrupt_manager.h"
+#include "../timer/timer.h"
 
 class MemoryBus {
    public:
@@ -20,14 +22,17 @@ class MemoryBus {
 
     int MBC = 0;
 
+    InterruptManager& interruptManager;
+    Timer& timer;
+
    public:
-    MemoryBus();
+    MemoryBus(InterruptManager& interruptManager, Timer& timer);
     ~MemoryBus() = default;
 
     void loadCartridge(std::string filename);
 
     void write(u16 address, u8 data);
-    u8 read(u16 address) const;
+    u8 read(u16 address);
 
    private:
     void initialize();

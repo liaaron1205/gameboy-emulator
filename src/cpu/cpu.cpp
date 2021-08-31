@@ -1,6 +1,6 @@
 #include "cpu.h"
 
-CPU::CPU(MemoryBus& _memory) : memory{_memory} {
+CPU::CPU(MemoryBus& memory, InterruptManager& interruptManager) : memory{memory}, interruptManager{interruptManager} {
     af.set(0x01B);
     bc.set(0x0013);
     de.set(0x00D8);
@@ -11,32 +11,23 @@ CPU::CPU(MemoryBus& _memory) : memory{_memory} {
 }
 
 void CPU::tick() {
-    if (cycles == 0) handleInterrupts();
+    if (cycles == 0) {
+        u16 address = interruptManager.checkInterrupts();
+        serviceInterrupts(address);
+    }
     if (cycles == 0) fetchDecodeExecute();
     cycles--;
 }
 
-void CPU::handleInterrupts() {
-    if (!IME) return;
-    u8 IE = memory.read(0xFFFF);
-    u8 IF = memory.read(0xFF0F);
-    for (int pos = 0; pos < 5; pos++) {
-        if ((IE & (1 << pos)) && (IF & (1 << pos))) {
-            //Request interrupt
-            //Reset the IME and IF bit
-            IME = 0;
-            IF &= !(1 << pos);
-            memory.write(IF, 0xFF0F);
-
-            cycles += 8;
-            push(PC);
-            setPC(0x0040 + pos * 0x0008);
-        }
-    }
+void CPU::serviceInterrupts(u16 address) {
+    if (address == 0xFFFF) return;
+    cycles += 8;
+    push(PC);
+    setPC(address);
 }
 
 void CPU::fetchDecodeExecute() {
-    cycles = 0;
+    // printDebug();
     u8 opcode = fetch();
     switch (opcode) {
         case 0x00:
@@ -157,14 +148,15 @@ void CPU::fetchDecodeExecute() {
             break;
         case 0x27:
             if (f.getN()) {  //subtraction
-                if (f.getH()) a.set(a.get() - 0x06);
                 if (f.getC()) a.set(a.get() - 0x60);
+                if (f.getH()) a.set(a.get() - 0x06);
+
             } else {
-                if (f.getH() || (a.get() & 0x0F) > 0x09) a.set(a.get() + 0x06);
                 if (f.getC() || (a.get() & 0xFF) > 0x99) {
                     a.set(a.get() + 0x60);
                     f.setC(1);
                 }
+                if (f.getH() || (a.get() & 0x0F) > 0x09) a.set(a.get() + 0x06);
             }
             f.setZ(a.get() == 0);
             f.setH(0);
@@ -245,7 +237,7 @@ void CPU::fetchDecodeExecute() {
         case 0x3F:
             f.setN(0);
             f.setH(0);
-            f.setC(f.getC());
+            f.setC(!f.getC());
             break;
         case 0x40:
             b.set(b.get());
@@ -410,7 +402,7 @@ void CPU::fetchDecodeExecute() {
             write(hl.get(), l.get());
             break;
         case 0x76:
-            //TODO Halt
+            printf("halt called\n");
             break;
         case 0x77:
             write(hl.get(), a.get());
@@ -705,7 +697,7 @@ void CPU::fetchDecodeExecute() {
             break;
         case 0xD9:
             ret();
-            IME = 1;  //This will only be called when IME is 1?
+            interruptManager.setIME(1);
             break;
         case 0xDA:
             jp(f.getC());
@@ -738,8 +730,7 @@ void CPU::fetchDecodeExecute() {
             rst(0x20);
             break;
         case 0xE8:
-            SP = add(SP, extend(fetch()));
-            f.setZ(0);
+            SP = add(SP, fetch());
             cycles += 4;
             break;
         case 0xE9:
@@ -760,12 +751,13 @@ void CPU::fetchDecodeExecute() {
             break;
         case 0xF1:
             af.set(pop());
+            f.clearLowBits();
             break;
         case 0xF2:
             a.set(read(0xFF00 + c.get()));
             break;
         case 0xF3:
-            IME = 0;
+            interruptManager.setIME(0);
             break;
         case 0xF5:
             pushOP(af.get());
@@ -777,8 +769,7 @@ void CPU::fetchDecodeExecute() {
             rst(0x30);
             break;
         case 0xF8:
-            hl.set(add(SP, extend(fetch())));
-            f.setZ(0);
+            hl.set(add(SP, fetch()));
             break;
         case 0xF9:
             SP = hl.get();
@@ -788,7 +779,7 @@ void CPU::fetchDecodeExecute() {
             a.set(read(fetch16()));
             break;
         case 0xFB:
-            IME = 1;
+            interruptManager.setIME(1);
             break;
         case 0xFE:
             cp(a.get(), fetch());
@@ -1727,9 +1718,10 @@ u8 CPU::swap(u8 value) {
 }
 
 void CPU::bit(int num, u8 value) {
-    f.setZ(!(value & (1 << num)));
+    bool isSet = (value & (1 << num));
+    f.setZ(!isSet);
     f.setN(0);
-    f.setC(1);
+    f.setH(1);
 }
 u8 CPU::res(int num, u8 value) {
     return value & ~(1 << num);
@@ -1758,6 +1750,19 @@ u16 CPU::add(u16 term1, u16 term2, bool carry) {  //4 extra cycles
     f.setN(0);
     f.setH((term1 & 0xFFF) + (term2 & 0xFFF) + carryValue > 0xFFF);
     f.setC((term1 + term2 + carryValue) > 0xFFFF);
+
+    return value;
+}
+u16 CPU::add(u16 term1, u8 term2) {  //4 extra cycles
+    cycles += 4;
+
+    u16 extendedTerm2 = extend(term2);
+    u16 value = term1 + extendedTerm2;
+
+    f.setZ(0);
+    f.setN(0);
+    f.setH((term1 & 0xF) + (term2 & 0xF) > 0xF);
+    f.setC((term1 & 0xFF) + (term2 & 0xFF) > 0xFF);
 
     return value;
 }
@@ -1834,7 +1839,7 @@ u16 CPU::pop() {  //8 cycles
 }
 
 void CPU::jr(bool cond) {
-    u16 newPC = extend(fetch()) + PC - 2;
+    u16 newPC = extend(fetch()) + PC;
     if (cond) setPC(newPC);
 }
 void CPU::jp(bool cond) {
@@ -1864,4 +1869,8 @@ void CPU::rst(u16 value) {
 
 u16 CPU::extend(u8 value) {
     return (u16)(i16)(i8)value;
+}
+
+void CPU::printDebug() {
+    printf("PC: %04x, OP: %02x, A: %02x, B: %02x, C: %02x, D: %02x, E: %02x, F: %02x, H: %02x, L: %02x, Z: %d, N: %d, H: %d, C: %d\n", PC, memory.read(PC), a.get(), b.get(), c.get(), d.get(), e.get(), f.get(), h.get(), l.get(), f.getZ(), f.getN(), f.getH(), f.getC());
 }

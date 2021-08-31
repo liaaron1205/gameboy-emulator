@@ -8,6 +8,8 @@ void Register::set(u8 value) { val = value; }
 
 FlagRegister::FlagRegister() { val = 0; }
 
+void FlagRegister::clearLowBits() { val &= 0xF0; }
+
 void FlagRegister::setZ(bool value) {
     val &= ~(1 << Z_FLAG);
     if (value) val |= (1 << Z_FLAG);

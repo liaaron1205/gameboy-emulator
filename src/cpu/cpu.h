@@ -1,10 +1,12 @@
 #pragma once
 #include "../memory/memory_bus.h"
+#include "interrupt_manager.h"
 #include "registers.h"
 
 class CPU {
    public:  //Temp
     MemoryBus& memory;
+    InterruptManager& interruptManager;
 
     Register a, b, c, d, e, h, l;
     FlagRegister f;
@@ -18,16 +20,16 @@ class CPU {
 
     int cycles = 0;
 
-    bool IME = 1;
-
    public:
-    CPU(MemoryBus& _memory);
+    CPU(MemoryBus& memory, InterruptManager& interruptManager);
     ~CPU() = default;
 
     void tick();
 
    public:  //Temp
-    void handleInterrupts();
+    void printDebug();
+
+    void serviceInterrupts(u16 address);
 
     void fetchDecodeExecute();
     void fetchDecodeExecutePrefix();
@@ -62,6 +64,7 @@ class CPU {
 
     u8 add(u8 term1, u8 term2, bool carry = 0);
     u16 add(u16 term1, u16 term2, bool carry = 0);
+    u16 add(u16 term1, u8 term2);
     u8 sub(u8 term1, u8 term2, bool carry = 0);
     u16 sub(u16 term1, u16 term2, bool carry = 0);
 
