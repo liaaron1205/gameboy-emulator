@@ -3,6 +3,7 @@
 #include "../constants.h"
 
 class InterruptManager {
+   public:  //TODO REmove
     u8 IE = 0xFF, IF = 0xE0;
     bool IME = 0;
 
@@ -31,5 +32,5 @@ class InterruptManager {
     void requestInterrupt(Types type);
 
     //Returns the address of the highest priority interrupt.
-    u16 checkInterrupts();
+    u16 checkInterrupts(bool overrideIME = 0);
 };

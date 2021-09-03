@@ -17,13 +17,15 @@ void InterruptManager::requestInterrupt(InterruptManager::Types type) {
     setIF(IF | (1 << type));
 }
 
-u16 InterruptManager::checkInterrupts() {
-    if (!IME) return 0xFFFF;
+u16 InterruptManager::checkInterrupts(bool overrideIME) {
+    if (!IME && !overrideIME) return 0xFFFF;
     for (int type = 0; type < 5; type++) {
         u8 mask = (1 << type);
         if ((IE & mask) && (IF & mask)) {
-            IME = 0;
-            IF &= ~mask;
+            if (!overrideIME) {
+                IME = 0;
+                IF &= ~mask;
+            }
             return addresses[type];
         }
     }

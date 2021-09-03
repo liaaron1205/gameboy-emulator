@@ -20,6 +20,8 @@ class CPU {
 
     int cycles = 0;
 
+    bool halted = 0;
+
    public:
     CPU(MemoryBus& memory, InterruptManager& interruptManager);
     ~CPU() = default;

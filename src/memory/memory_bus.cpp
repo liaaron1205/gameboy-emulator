@@ -178,7 +178,6 @@ void MemoryBus::writeIO(u16 address, u8 data) {
             memory[address] = data;
             if (data == 0x81) {
                 std::cerr << (char)memory[0xFF01];
-                // if ((char)memory[0xFF01] == '5') exit(0);
             }
             break;
         case 0xFF04:

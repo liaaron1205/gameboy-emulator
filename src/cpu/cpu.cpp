@@ -12,15 +12,23 @@ CPU::CPU(MemoryBus& memory, InterruptManager& interruptManager) : memory{memory}
 
 void CPU::tick() {
     if (cycles == 0) {
-        u16 address = interruptManager.checkInterrupts();
+        u16 address = interruptManager.checkInterrupts(halted);
         serviceInterrupts(address);
     }
-    if (cycles == 0) fetchDecodeExecute();
-    cycles--;
+    if (cycles == 0 && !halted)
+        fetchDecodeExecute();
+    else if (cycles == 0)
+        cycles += 4;
+
+    if (cycles > 0) cycles--;
 }
 
 void CPU::serviceInterrupts(u16 address) {
     if (address == 0xFFFF) return;
+    if (halted) {
+        halted = 0;
+        return;
+    }
     cycles += 8;
     push(PC);
     setPC(address);
@@ -402,7 +410,7 @@ void CPU::fetchDecodeExecute() {
             write(hl.get(), l.get());
             break;
         case 0x76:
-            printf("halt called\n");
+            halted = 1;
             break;
         case 0x77:
             write(hl.get(), a.get());
