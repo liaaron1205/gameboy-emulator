@@ -6,6 +6,7 @@
 
 #include "../constants.h"
 #include "../cpu/interrupt_manager.h"
+#include "../gpu/gpu.h"
 #include "../timer/timer.h"
 
 class MemoryBus {
@@ -24,9 +25,10 @@ class MemoryBus {
 
     InterruptManager& interruptManager;
     Timer& timer;
+    GPU& gpu;
 
    public:
-    MemoryBus(InterruptManager& interruptManager, Timer& timer);
+    MemoryBus(InterruptManager& interruptManager, Timer& timer, GPU& gpu);
     ~MemoryBus() = default;
 
     void loadCartridge(std::string filename);

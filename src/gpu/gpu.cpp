@@ -1,25 +1,43 @@
 #include "gpu.h"
 
-void GPU::setCurrentScanline() { currentScanline = 0; }
-void GPU::setLcdStatus(u8 value) { lcdStatus = value; }
-
-u8 GPU::getCurrentScanline() { return currentScanline; }
-u8 GPU::getLcdStatus() { return lcdStatus; }
-
-bool GPU::isLcdEnabled() { return lcdStatus & (1 << 7); }
-
 void GPU::tick() {
-    if (isLcdEnabled())
-        scanlineCounter++;
-    else
-        return;
+    modeTicks++;
 
-    if (scanlineCounter == 456) {
-        currentScanline++;
-        scanlineCounter = 0;
+    switch (mode) {
+        case OAM:
+            if (modeTicks == 80) {
+                modeTicks = 0;
+                mode = VRAM;
+            }
+            break;
+        case VRAM:
+            if (modeTicks == 172) {
+                modeTicks = 0;
+                mode = HBlank;
 
-        // if (currentScanline == 144) Request interrupt
-        if (currentScanline > 153) currentScanline = 0;
-        // if (currentScanline < 144) Draw scanline
+                //TODO Write a scanline to the framebuffer
+            }
+            break;
+        case HBlank:
+            if (modeTicks == 204) {
+                modeTicks = 0;
+                LY++;
+
+                if (LY == 144) {
+                    mode = VBlank;
+                } else
+                    mode = OAM;
+            }
+            break;
+        case VBlank:
+            if (modeTicks == 456) {
+                modeTicks = 0;
+                LY++;
+                if (LY == 154) {
+                    mode = OAM;
+                    LY = 0;
+                }
+            }
+            break;
     }
 }

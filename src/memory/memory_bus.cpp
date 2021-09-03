@@ -2,7 +2,7 @@
 
 #include <cstdio>
 
-MemoryBus::MemoryBus(InterruptManager& interruptManager, Timer& timer) : memory(0x10000), cartridge(0x200000), ramBanks(0x8000), interruptManager(interruptManager), timer(timer) {
+MemoryBus::MemoryBus(InterruptManager& interruptManager, Timer& timer, GPU& gpu) : memory(0x10000), cartridge(0x200000), ramBanks(0x8000), interruptManager(interruptManager), timer(timer), gpu{gpu} {
     std::fill(memory.begin(), memory.end(), 0);
     std::fill(cartridge.begin(), cartridge.end(), 0);
     std::fill(ramBanks.begin(), ramBanks.end(), 0);
