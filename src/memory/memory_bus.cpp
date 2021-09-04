@@ -58,6 +58,7 @@ void MemoryBus::loadCartridge(std::string filename) {
         }
     } else {
         std::cerr << "Failed to open file" << std::endl;
+        exit(1);
     }
 
     //Detect MBC
