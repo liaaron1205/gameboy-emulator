@@ -101,8 +101,7 @@ void MemoryBus::write(u16 address, u8 data) {
     }
     //Sprite Atribute Table (OAM)
     else if (address < 0xFEA0) {
-        //TODO Fix
-        memory[address] = data;
+        gpu.writeOAM(address, data);
     }
     //Restricted area
     else if (address < 0xFF00) {
@@ -149,8 +148,8 @@ u8 MemoryBus::read(u16 address) {
     }
     //Sprite Atribute Table (OAM)
     else if (address < 0xFEA0) {
-        //TODO Fix
-        return memory[address];
+        if (dma.isOamBlocked()) return 0xFF;
+        return gpu.readOAM(address);
     }
     //Restricted area
     else if (address < 0xFF00) {
@@ -253,5 +252,26 @@ void MemoryBus::HandleBanking(u16 address, u8 data) {
     if (currentROMBank == 0 || currentROMBank == 0x20 || currentROMBank == 0x40 || currentROMBank == 0x60) currentROMBank++;
 }
 
-void BlarggOutput() {
+void MemoryBus::tick() {
+    if (!dma.transferInProgress) return;
+
+    if (++dma.ticks < 648) return;
+
+    dma.transferInProgress = 0;
+    dma.transferRestarted = 0;
+    dma.ticks = 0;
+
+    for (u8 i = 0; i < 0xA0; i++) {
+        write((u16)(0xFE00 + i), read(dma.from + i));
+    }
+}
+
+bool MemoryBus::DMA::isOamBlocked() { return transferRestarted || transferInProgress && ticks >= 5; }
+
+void MemoryBus::DMA::setDMARegister(u8 value) {
+    from = (u16)value * 0x100;
+    transferRestarted = isOamBlocked();
+    ticks = 0;
+    transferInProgress = 1;
+    DMARegister = value;
 }

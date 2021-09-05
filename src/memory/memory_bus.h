@@ -27,9 +27,22 @@ class MemoryBus {
     Timer& timer;
     GPU& gpu;
 
+    struct DMA {
+        bool transferInProgress;
+        bool transferRestarted;
+        u16 from;
+        int ticks;
+        u8 DMARegister = 0xFF;
+
+        bool isOamBlocked();
+        void setDMARegister(u8 value);
+    } dma;
+
    public:
     MemoryBus(InterruptManager& interruptManager, Timer& timer, GPU& gpu);
     ~MemoryBus() = default;
+
+    void tick();
 
     void loadCartridge(std::string filename);
 

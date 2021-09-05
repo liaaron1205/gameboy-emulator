@@ -22,6 +22,7 @@ class GameBoy {
     GameBoy(std::string filename);
     ~GameBoy() = default;
 
+    void draw();
     void run();
     void tick();  //Run 60 times a second
    private:
