@@ -7,6 +7,7 @@
 #include "../constants.h"
 #include "../cpu/interrupt_manager.h"
 #include "../gpu/gpu.h"
+#include "../joypad/joypad.h"
 #include "../timer/timer.h"
 
 class MemoryBus {
@@ -26,6 +27,7 @@ class MemoryBus {
     InterruptManager& interruptManager;
     Timer& timer;
     GPU& gpu;
+    Joypad& joypad;
 
     struct DMA {
         bool transferInProgress;
@@ -39,7 +41,7 @@ class MemoryBus {
     } dma;
 
    public:
-    MemoryBus(InterruptManager& interruptManager, Timer& timer, GPU& gpu);
+    MemoryBus(InterruptManager& interruptManager, Timer& timer, GPU& gpu, Joypad& joypad);
     ~MemoryBus() = default;
 
     void tick();

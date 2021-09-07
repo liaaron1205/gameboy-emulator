@@ -18,7 +18,62 @@ void GameBoy::run() {
                 case SDL_QUIT:
                     isRunning = 0;
                     break;
-
+                case SDL_KEYDOWN:
+                    switch (event.key.keysym.sym) {
+                        case (SDLK_RIGHT):
+                            joypad.keysPressed[Joypad::Keys::Right] = 1;
+                            break;
+                        case (SDLK_LEFT):
+                            joypad.keysPressed[Joypad::Keys::Left] = 1;
+                            break;
+                        case (SDLK_UP):
+                            joypad.keysPressed[Joypad::Keys::Up] = 1;
+                            break;
+                        case (SDLK_DOWN):
+                            joypad.keysPressed[Joypad::Keys::Down] = 1;
+                            break;
+                        case (SDLK_x):
+                            joypad.keysPressed[Joypad::Keys::A] = 1;
+                            break;
+                        case (SDLK_z):
+                            joypad.keysPressed[Joypad::Keys::B] = 1;
+                            break;
+                        case (SDLK_SPACE):
+                            joypad.keysPressed[Joypad::Keys::Select] = 1;
+                            break;
+                        case (SDLK_RETURN):
+                            joypad.keysPressed[Joypad::Keys::Start] = 1;
+                            break;
+                    }
+                    break;
+                case SDL_KEYUP:
+                    switch (event.key.keysym.sym) {
+                        case (SDLK_RIGHT):
+                            joypad.keysPressed[Joypad::Keys::Right] = 0;
+                            break;
+                        case (SDLK_LEFT):
+                            joypad.keysPressed[Joypad::Keys::Left] = 0;
+                            break;
+                        case (SDLK_UP):
+                            joypad.keysPressed[Joypad::Keys::Up] = 0;
+                            break;
+                        case (SDLK_DOWN):
+                            joypad.keysPressed[Joypad::Keys::Down] = 0;
+                            break;
+                        case (SDLK_x):
+                            joypad.keysPressed[Joypad::Keys::A] = 0;
+                            break;
+                        case (SDLK_z):
+                            joypad.keysPressed[Joypad::Keys::B] = 0;
+                            break;
+                        case (SDLK_SPACE):
+                            joypad.keysPressed[Joypad::Keys::Select] = 0;
+                            break;
+                        case (SDLK_RETURN):
+                            joypad.keysPressed[Joypad::Keys::Start] = 0;
+                            break;
+                    }
+                    break;
                 default:
                     break;
             }
@@ -33,7 +88,11 @@ void GameBoy::run() {
 
         Uint64 end = SDL_GetPerformanceCounter();
         float elapsedMS = (end - start) / (float)SDL_GetPerformanceFrequency() * 1000.0f;
-        SDL_Delay(std::floor(16.666f - elapsedMS));
+        int delay = std::floor(16.666f - elapsedMS);
+        if (delay > 0)
+            SDL_Delay(delay);
+        else
+            std::cerr << delay << std::endl;
     }
 }
 

@@ -2,16 +2,24 @@
 
 #include <cstdio>
 
-MemoryBus::MemoryBus(InterruptManager& interruptManager, Timer& timer, GPU& gpu) : memory(0x10000), cartridge(0x200000), ramBanks(0x8000), interruptManager(interruptManager), timer(timer), gpu{gpu} {
+MemoryBus::MemoryBus(InterruptManager& interruptManager, Timer& timer, GPU& gpu, Joypad& joypad) : memory(0x10000),
+                                                                                                   cartridge(0x200000),
+                                                                                                   ramBanks(0x8000),
+                                                                                                   interruptManager(interruptManager),
+                                                                                                   timer(timer),
+                                                                                                   gpu(gpu),
+                                                                                                   joypad(joypad) {
     std::fill(memory.begin(), memory.end(), 0);
     std::fill(cartridge.begin(), cartridge.end(), 0);
     std::fill(ramBanks.begin(), ramBanks.end(), 0);
 
     numberRAMBanks = cartridge[0x148];
+
+    initialize();
 }
 
-//TODO use write fn instead
 void MemoryBus::initialize() {
+    write(0xFF0F, 0x01);
     write(0xFF00, 0xCF);  // JOYP
     write(0xFF02, 0x7E);  // SC
     write(0xFF04, 0xAB);  // DIV
@@ -84,8 +92,7 @@ void MemoryBus::write(u16 address, u8 data) {
     }
     //VRAM
     else if (address < 0xA000) {
-        //TODO Fix
-        memory[address] = data;
+        gpu.writeVRAM(address, data);
     }
     //Cartridge RAM Bank
     else if (address < 0xC000) {
@@ -105,6 +112,7 @@ void MemoryBus::write(u16 address, u8 data) {
     }
     //Restricted area
     else if (address < 0xFF00) {
+        memory[address] = data;
     }
     //I/O Registers
     else if (address < 0xFF80) {
@@ -131,8 +139,7 @@ u8 MemoryBus::read(u16 address) {
     }
     //VRAM
     else if (address < 0xA000) {
-        //TODO Fix
-        return memory[address];
+        return gpu.readVRAM(address);
     }
     //Cartridge RAM Bank
     else if (address < 0xC000) {
@@ -153,7 +160,7 @@ u8 MemoryBus::read(u16 address) {
     }
     //Restricted area
     else if (address < 0xFF00) {
-        return 0xFF;
+        return memory[address];
     }
     //I/O Registers
     else if (address < 0xFF80) {
@@ -171,6 +178,9 @@ u8 MemoryBus::read(u16 address) {
 
 void MemoryBus::writeIO(u16 address, u8 data) {
     switch (address) {
+        case 0xFF00:
+            joypad.setJOYP(data);
+            break;
         case 0xFF01:
             memory[address] = data;
             break;
@@ -192,6 +202,42 @@ void MemoryBus::writeIO(u16 address, u8 data) {
         case 0xFF07:
             timer.setTac(data);
             break;
+        case 0xFF40:
+            gpu.setLcdControl(data);
+            break;
+        case 0xFF41:
+            gpu.setStat(data);
+            break;
+        case 0xFF42:
+            gpu.setSCY(data);
+            break;
+        case 0xFF43:
+            gpu.setSCX(data);
+            break;
+        case 0xFF44:
+            gpu.setLY();
+            break;
+        case 0xFF45:
+            gpu.setLYC(data);
+            break;
+        case 0xFF46:
+            dma.setDMARegister(data);
+            break;
+        case 0xFF47:
+            gpu.setBgPalette(data);
+            break;
+        case 0xFF48:
+            gpu.setObj0Palette(data);
+            break;
+        case 0xFF49:
+            gpu.setObj1Palette(data);
+            break;
+        case 0xFF4A:
+            gpu.setWY(data);
+            break;
+        case 0xFF4B:
+            gpu.setWX(data);
+            break;
         case 0xFF0F:
             interruptManager.setIF(data);
             break;
@@ -203,7 +249,10 @@ void MemoryBus::writeIO(u16 address, u8 data) {
 
 u8 MemoryBus::readIO(u16 address) {
     switch (address) {
+        case 0xFF00:
+            return joypad.getJOYP();
         case 0xFF01:
+            return 0xFF;
             return memory[address];
         case 0xFF02:
             return (memory[address] | 0b01111110);
@@ -215,6 +264,30 @@ u8 MemoryBus::readIO(u16 address) {
             return timer.getTma();
         case 0xFF07:
             return timer.getTac();
+        case 0xFF40:
+            return gpu.getLcdControl();
+        case 0xFF41:
+            return gpu.getStat();
+        case 0xFF42:
+            return gpu.getSCY();
+        case 0xFF43:
+            return gpu.getSCX();
+        case 0xFF44:
+            return gpu.getLY();
+        case 0xFF45:
+            return gpu.getLYC();
+        case 0xFF46:
+            return dma.DMARegister;
+        case 0xFF47:
+            return gpu.getBgPalette();
+        case 0xFF48:
+            return gpu.getObj0Palette();
+        case 0xFF49:
+            return gpu.getObj1Palette();
+        case 0xFF4A:
+            return gpu.getWY();
+        case 0xFF4B:
+            return gpu.getWX();
         case 0xFF0F:
             return interruptManager.getIF();
         default:

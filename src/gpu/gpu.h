@@ -61,6 +61,9 @@ class GPU {
     //0xFF4A/0xFF4B, Y/X position of the VIEWING AREA to start drawing the window, note X position is -7
     u8 WY, WX;
 
+    int enableDelay = 0;
+    bool wasDisabled = 0;
+
     InterruptManager& interruptManager;
 
    public:
@@ -109,7 +112,8 @@ class GPU {
    private:
     void renderScanline();
     void renderTile(int x, int y, int realX, int realY, bool tileMapIndex, bool tileSelect, u8 palette);
+    void renderSprites();
 
-    std::vector<Color> getPalette(u8 value);
+    Color getPalette(u8 value, int idx);
     int getColorIndex(u8 tileMsb, u8 tileLsb, int tileXpos);
 };

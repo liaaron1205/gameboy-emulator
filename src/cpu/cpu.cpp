@@ -798,6 +798,7 @@ void CPU::fetchDecodeExecute() {
         default:
             break;
     }
+    // if (opcode != 0xCB) printf("%x %d\n", opcode, cycles);
 }
 void CPU::fetchDecodeExecutePrefix() {
     u8 opcode = fetch();
@@ -1571,6 +1572,7 @@ void CPU::fetchDecodeExecutePrefix() {
             a.set(set(7, a.get()));
             break;
     }
+    // printf("cb %x %d\n", opcode, cycles);
 }
 
 u8 CPU::read(u16 address) {  // 4 cycles

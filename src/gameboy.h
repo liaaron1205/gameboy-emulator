@@ -3,15 +3,17 @@
 #include "cpu/cpu.h"
 #include "cpu/interrupt_manager.h"
 #include "gpu/gpu.h"
+#include "joypad/joypad.h"
 #include "memory/memory_bus.h"
 #include "timer/timer.h"
 
 class GameBoy {
    public:
     InterruptManager interruptManager;
+    Joypad joypad = Joypad(interruptManager);
     GPU gpu = GPU(interruptManager);
     Timer timer = Timer(interruptManager);
-    MemoryBus memory = MemoryBus(interruptManager, timer, gpu);
+    MemoryBus memory = MemoryBus(interruptManager, timer, gpu, joypad);
     CPU cpu = CPU(memory, interruptManager);
 
     SDL_Event event;
