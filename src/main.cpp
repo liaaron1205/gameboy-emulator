@@ -1,10 +1,10 @@
 #include "gameboy.h"
 
-int main(int argv, char** args) {
-    //GameBoy gb = GameBoy("tests/mooneye/acceptance/bits/unused_hwio-GS.gb");
-    // GameBoy gb = GameBoy("tests/mooneye/acceptance/oam_dma_restart.gb");
-    //GameBoy gb = GameBoy("tests/gb-test-roms-master/mem_timing-2/rom_singles/01-read_timing.gb");
-    //GameBoy gb = GameBoy("tests/gb-test-roms-master/mem_timing-2/mem_timing.gb");
-    GameBoy gb = GameBoy("tests/games/Dr. Mario.gb");
+int main(int argc, char** argv) {
+    if (argc == 1) {
+        std::cerr << "Please enter a rom" << std::endl;
+    }
+    std::string path = argv[1];
+    GameBoy gb = GameBoy(path);
     gb.run();
 }
