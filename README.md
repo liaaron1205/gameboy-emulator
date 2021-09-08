@@ -5,7 +5,7 @@ GameBoy emulator written in C++.
 How to Use:
 - Clone the repository.
 - Run `make` in the `src` folder. If getting an error, make sure to use [this](https://www.ics.uci.edu/~pattis/common/handouts/mingweclipse/mingw.html) version of `g++`
-- Run the `gameboy` executable, specifying the path to the ROM as a command line argument.
+- Run the `gameboy` executable, specifying the path to the ROM as a command line argument. Note only games that use no memory banking or MBC1 are playable.
 
 Controls:
 - Arrow Keys &rarr; Directional Pad
