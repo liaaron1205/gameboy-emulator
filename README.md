@@ -31,7 +31,7 @@ To Do:
 - Simple GUI for loading games
 
 Resources Used:
-- [A journey into GameBoy emulation](https://robertovaccari.com/blog/2020_09_26_gameboy/) - The main reference used, most of the implementations are based off the commentary here.
+- [A journey into GameBoy emulation](https://robertovaccari.com/blog/2020_09_26_gameboy/) - The main reference used, most of the implementations are based off the commentary and source code here.
 - [codeslinger GameBoy blog](http://www.codeslinger.co.uk/pages/projects/gameboy/banking.html) - Additional reference, used for details about graphics processing.
 - [GameBoy Emulation in JavaScript](https://imrannazar.com/GameBoy-Emulation-in-JavaScript:-The-CPU) - Also used for video details.
 - [PanDocs](https://gbdev.io/pandocs/) - Used for details about specific ambiguous behaviour.
