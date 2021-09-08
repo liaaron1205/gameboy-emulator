@@ -91,8 +91,8 @@ void GameBoy::run() {
         int delay = std::floor(16.666f - elapsedMS);
         if (delay > 0)
             SDL_Delay(delay);
-        else
-            std::cerr << delay << std::endl;
+        // else
+        // std::cerr << delay << std::endl;
     }
 }
 

@@ -26,9 +26,6 @@ u8 Joypad::getJOYP() {
 
         if ((newState & 0xF) & ~(prevState & 0xF)) interruptManager.requestInterrupt(InterruptManager::Types::Joypad);
         u8 tmp = (u8)(newState | (prevState & 0x30));
-
-        // Prevents the emulator from being detected as a Super Gameboy
-        // https://www.reddit.com/r/EmuDev/comments/5bgcw1/gb_lcd_disableenable_behavior/
         if ((tmp & 0x30) == 0x10 || (tmp & 0x30) == 0x20) {
             JOYP = tmp;
         } else {
