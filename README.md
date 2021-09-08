@@ -2,6 +2,8 @@
 
 GameBoy emulator written in C++.
 
+![Tetris](https://i.imgur.com/c9wvqNY.png) ![Dr. Mario](https://i.imgur.com/IUtulaC.png)
+
 How to Use:
 - Clone the repository.
 - Run `make` in the `src` folder. If getting an error, make sure to use [this](https://www.ics.uci.edu/~pattis/common/handouts/mingweclipse/mingw.html) version of `g++`
